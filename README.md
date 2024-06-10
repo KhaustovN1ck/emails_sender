@@ -1,6 +1,6 @@
 # How it looks like:
 
-![App example](./media/how_it_works.gif)
+![App example](./media/how_it_works_1.gif)
 
 # How to run:
 
