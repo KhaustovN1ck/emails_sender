@@ -1,0 +1,54 @@
+$mobile-breakpoint: 1280px;
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.status-table {
+  .ant-table-row {
+    animation: fadeIn 0.5s ease-in;
+  }
+
+}
+
+.ant-tag-green {
+  animation: fadeIn 0.5s ease-in;
+}
+
+.ant-tag-red {
+  animation: fadeIn 0.5s ease-in;
+}
+
+
+.wrapper {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+}
+
+.divider {
+  height: 300px;
+  width: 1px;
+  background: #efefef;
+  margin: 0 25px;
+}
+
+.container {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+
+  .section {
+    width: 100%;
+    @media all and (min-width: $mobile-breakpoint) {
+      width: calc(50% - 50px);
+    }
+  }
+}

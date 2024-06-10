@@ -1,0 +1,52 @@
+services:
+  react-app:
+    build:
+      context: ./fe-react
+    ports:
+      - '4173:4173'
+    depends_on:
+      - nest-api
+    networks:
+      - emails-app-network
+
+  nest-api:
+    build:
+      context: ./be-nestjs
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - DATABASE_HOST=mysql
+      - DATABASE_PORT=3306
+      - DATABASE_USER=user
+      - DATABASE_PASSWORD=user_password
+      - DATABASE_NAME=emails
+    networks:
+      - emails-app-network
+
+  redis:
+    image: redis:latest
+    ports:
+      - '6379:6379'
+    networks:
+      - emails-app-network
+
+  mysql:
+    build:
+      context: ./mysql
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: password_root
+      MYSQL_DATABASE: emails
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user_password
+    networks:
+      - emails-app-network
+
+networks:
+  emails-app-network:
+    driver: bridge
