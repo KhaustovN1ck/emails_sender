@@ -29,7 +29,6 @@ const App = () => {
             dataIndex: ['status', 'name'],
             key: 'status',
             render: (status: Status) => {
-                console.log(status);
                 if (status === Status.Validating) {
                     return <Spin/>;
                 }
@@ -94,6 +93,7 @@ const App = () => {
 
     const handleReset = async () => {
         try {
+            setLoading(true);
             await resetEmails();
             resetEmailsLocally();
         } finally {
@@ -140,6 +140,7 @@ const App = () => {
                     <Table
                         dataSource={emails}
                         columns={columns}
+                        sortDirections={['descend']}
                         rowKey="email"
                         className="status-table"
                         pagination={false}

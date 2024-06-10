@@ -1,4 +1,4 @@
-import {BadRequestException, Injectable} from '@nestjs/common';
+import {BadRequestException, Injectable, OnModuleDestroy} from '@nestjs/common';
 import {InjectQueue} from '@nestjs/bull';
 import {Queue} from 'bull';
 import {InjectRepository} from "@nestjs/typeorm";
@@ -8,7 +8,7 @@ import {Status} from "./entities/status.entity";
 import {Status as StatusEnum} from "./enum/status";
 
 @Injectable()
-export class MailerService {
+export class MailerService implements OnModuleDestroy {
     constructor(
         @InjectQueue('email') private emailQueue: Queue,
         @InjectRepository(Email)
@@ -17,6 +17,10 @@ export class MailerService {
         private readonly statusRepository: Repository<Status>,
         private dataSource: DataSource,
     ) {
+    }
+
+    async onModuleDestroy() {
+        await this.emailQueue.close(true);
     }
 
     private getValidatingStatus() {
@@ -67,8 +71,18 @@ export class MailerService {
     }
 
     async resetAll() {
+        await this.emailQueue.pause(true, true);
         await this.emailQueue.empty();
+        const activeJobs = await this.emailQueue.getActive();
+        try {
+            for(const job of activeJobs) {
+                await job.remove();
+            }
+        } catch (err) {
+            console.log(`error happened during removing job. ${err}`)
+        }
         await this.emailRepository.clear();
+        await this.emailQueue.resume(true);
     }
 
     async getAll() {

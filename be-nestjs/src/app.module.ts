@@ -3,7 +3,6 @@ import {MailerModule} from './mailer/mailer.module';
 import {EventEmitterModule} from '@nestjs/event-emitter';
 import {TypeOrmModule} from "@nestjs/typeorm";
 
-console.log(process.env.MYSQL_USER, process.env.MYSQL_ROOT_PASSWORD, process.env.MYSQL_DATABASE)
 
 @Module({
     imports: [

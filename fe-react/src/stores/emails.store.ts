@@ -1,5 +1,6 @@
 import {create} from "zustand";
 import {EmailRecord} from "../types/email-record.ts";
+import dayjs from "dayjs";
 
 type EmailsStore = {
     emails: EmailRecord[];
@@ -17,7 +18,6 @@ export const useEmails = create<EmailsStore>((set) => ({
     upsert: (newEmails) => {
         set((state) => {
             const updatedEmails = [...state.emails];
-
             newEmails.forEach((newEmail) => {
                 const index = updatedEmails.findIndex(email => email.id === newEmail.id);
                 if (index !== -1) {
@@ -26,7 +26,7 @@ export const useEmails = create<EmailsStore>((set) => ({
                     updatedEmails.push(newEmail);
                 }
             });
-
+            updatedEmails.sort((a, b) => dayjs(b.lastUpdatedAt).unix() - dayjs(a.lastUpdatedAt).unix());
             return {emails: updatedEmails};
         });
     },

@@ -7,8 +7,8 @@ import {Email} from "./entities/mail.entity";
 import {Repository} from "typeorm";
 import {Status} from "./entities/status.entity";
 
-const MIN_DELAY = 1000;
-const MAX_DELAY = 10000;
+const MIN_DELAY = 5000;
+const MAX_DELAY = 100000;
 
 @Processor('email')
 export class MailerProcessor {
@@ -21,9 +21,15 @@ export class MailerProcessor {
     ) {
     }
 
+    private getRandomDelay(minSeconds: number, maxSeconds: number) {
+        const minMilliseconds = minSeconds * 1000;
+        const maxMilliseconds = maxSeconds * 1000;
+        return Math.floor(Math.random() * (maxMilliseconds - minMilliseconds + 1)) + minMilliseconds;
+    }
+
     @Process({concurrency: 10})
     async handleEmail(job: Job<Email>) {
-        const delay = Math.floor(Math.random() * (MAX_DELAY - MIN_DELAY + 1)) + MIN_DELAY;
+        const delay = this.getRandomDelay(5, 100);
         const status = await new Promise((resolve) => setTimeout(() => {
             if (Math.random() > 0.5) {
                 resolve(StatusEnum.Valid);
@@ -31,14 +37,23 @@ export class MailerProcessor {
             resolve(StatusEnum.Invalid);
         }, delay));
 
-        const data = {
+        const data: Email = {
             ...job.data,
+            lastUpdatedAt: new Date(),
             status: await this.statusRepository.findOne({
                 where: {
                     name: status as StatusEnum,
                 }
             })
         }
+
+        // if by the time promise resolved, the record already does not exist in the DB
+        // consider the job was stopped from outside
+        if(!(await this.emailRepository.exists({where: {id: data.id}}))) {
+            await job.remove();
+            return;
+        }
+
 
         await this.emailRepository.save(data);
         this.eventEmitter.emit('email.processed', data);
